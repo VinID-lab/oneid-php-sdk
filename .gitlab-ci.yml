@@ -12,6 +12,4 @@ unittest:
       - composer.lock
   script:
     - composer install
-    - printenv
-    - echo ${TEST_SANDBOX_PRIVATEKEY}
     - ./vendor/bin/phpunit --coverage-text tests -v --testdox
