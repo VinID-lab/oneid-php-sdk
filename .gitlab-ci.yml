@@ -6,10 +6,11 @@ unittest:
   image: tarzanjw/php-composer-xdebug
   cache:
     key: $CI_PROJECT_NAME
-    policy: pull
+    policy: pull-push
     paths:
       - vendor
       - composer.lock
   script:
     - composer install
+    - echo $$TEST_SANDBOX_PRIVATEKEY
     - ./vendor/bin/phpunit --coverage-text tests -v --testdox
