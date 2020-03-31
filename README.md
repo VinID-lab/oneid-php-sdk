@@ -1,3 +1,6 @@
+[![coverage report](https://gitlab.id.vin/merchant-universal/is-lib/lib-php/badges/master/coverage.svg)](https://gitlab.id.vin/merchant-universal/is-lib/lib-php/commits/master)
+[![pipeline status](https://gitlab.id.vin/merchant-universal/is-lib/lib-php/badges/master/pipeline.svg)](https://gitlab.id.vin/merchant-universal/is-lib/lib-php/commits/master)
+
 # WIP: _This is in-progress document_
 
 # Installation

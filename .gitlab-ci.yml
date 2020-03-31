@@ -1,0 +1,15 @@
+stages:
+  - unittest
+
+unittest:
+  stage: unittest
+  image: tarzanjw/php-composer-xdebug
+  cache:
+    key: $CI_PROJECT_NAME
+    policy: pull-push
+    paths:
+      - vendor
+      - composer.lock
+  script:
+    - composer install
+    - ./vendor/bin/phpunit --coverage-text tests -v --testdox

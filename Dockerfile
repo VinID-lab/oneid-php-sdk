@@ -1,8 +1,4 @@
-FROM composer:latest
-
-RUN apk add --no-cache $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug
+FROM tarzanjw/php-composer-xdebug
 
 ADD . /oneid-lib
 WORKDIR /oneid-lib
