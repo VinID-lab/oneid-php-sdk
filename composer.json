@@ -1,0 +1,23 @@
+{
+  "name": "oneid/integration",
+  "type": "library",
+  "description": "Library to communicate with VinID platform",
+  "keywords": ["oneid", "vinid", "payment","php"],
+  "homepage": "https://developers.vinid.net",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Pham Viet Long",
+      "email": "v.longpv2@vinid.net",
+      "homepage": "https://vinid.net",
+      "role": "Developer"
+    }
+  ],
+  "require-dev": {
+    "phpunit/phpunit": "^9",
+    "phpunit/php-code-coverage": "^8.0"
+  },
+  "require": {
+    "ext-curl": "*"
+  }
+}

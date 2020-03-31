@@ -1,0 +1,7 @@
+.idea
+.*
+
+# PHP Composer
+#vendor
+#composer.lock
+.phpunit.*
