@@ -3,7 +3,7 @@ stages:
 
 unittest:
   stage: unittest
-  image: composer:latest
+  image: tarzanjw/php-composer-xdebug
   cache:
     key: $CI_PROJECT_NAME
     policy: pull
@@ -11,8 +11,5 @@ unittest:
       - vendor
       - composer.lock
   script:
-    - apk add --no-cache $PHPIZE_DEPS
-    - pecl install xdebug
-    - docker-php-ext-enable xdebug
     - composer install
     - ./vendor/bin/phpunit --coverage-text tests -v --testdox
