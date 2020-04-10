@@ -5,6 +5,7 @@ namespace OneId\Api;
 use OneId\Api\NonceManager\iNonceManager;
 use OneId\Api\NonceManager\RandomNonceManager;
 use OneId\Utilities;
+use OneId\Url;
 
 class Client
 {
@@ -81,9 +82,9 @@ class Client
             if (is_null($baseUrl)) {
                 $oneIdEnv = strtolower(Utilities::readValueFromEnv("ONEID_ENV", "sandbox"));
                 if ($oneIdEnv == "prod" || $oneIdEnv == "production") {
-                    $baseUrl = API_BASEURL_PRODUCTION;
+                    $baseUrl = Url::API_BASEURL_PRODUCTION;
                 } else {
-                    $baseUrl = API_BASEURL_SANDBOX;
+                    $baseUrl = Url::API_BASEURL_SANDBOX;
                 }
             }
             $this->baseUrl = $baseUrl;
