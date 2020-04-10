@@ -2,7 +2,7 @@
 
 namespace OneId;
 const _CLASS_PREFIX = __NAMESPACE__ . '\\';
-require_once __DIR__ . DIRECTORY_SEPARATOR;
+require_once __DIR__ . DIRECTORY_SEPARATOR . 'init.php';
 
 
 /**
