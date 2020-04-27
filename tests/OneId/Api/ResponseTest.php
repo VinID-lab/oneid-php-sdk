@@ -70,6 +70,7 @@ BODY;
     public function testGetHeaders()
     {
         $res = $this->_createResponse();
+//        $this->assertNotNull($res->getHeader());
         $this->assertEquals(self::$expectedHeaders, $res->getHeaders());
     }
 

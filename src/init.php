@@ -1,4 +1,5 @@
 <?php
+
 namespace OneId;
 
 const API_BASEURL_SANDBOX = 'https://api-merchant-sandbox.vinid.dev';

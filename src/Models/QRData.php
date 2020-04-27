@@ -55,7 +55,7 @@ class QRData
     /**
      * @return string
      */
-    public function getImgData(): string
+    public function getImgData()
     {
         return $this->imgData;
     }
@@ -63,7 +63,7 @@ class QRData
     /**
      * @return string
      */
-    public function getHref(): string
+    public function getHref()
     {
         return $this->href;
     }
@@ -71,7 +71,7 @@ class QRData
     /**
      * @return string
      */
-    public function getOrderId(): string
+    public function getOrderId()
     {
         return $this->orderId;
     }
@@ -79,7 +79,7 @@ class QRData
     /**
      * @return int
      */
-    public function getExpiration(): int
+    public function getExpiration()
     {
         return $this->expiration;
     }

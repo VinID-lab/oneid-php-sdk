@@ -113,7 +113,7 @@ class Order
     {
         $body = $this->buildApiRequestBody_GenTransactionQr();
         $client = $this->getClient();
-        $rv = $this->getClient()->request("GET", API_ENDPOINT_TRANSACTION_QR, $body);
+        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
         return QRData::createFromResponse($rv);
     }
 
