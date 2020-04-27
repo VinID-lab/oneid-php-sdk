@@ -116,4 +116,21 @@ class Order
         $rv = $this->getClient()->request("GET", API_ENDPOINT_TRANSACTION_QR, $body);
         return QRData::createFromResponse($rv);
     }
+
+    /**
+     * Verify OneID callback
+     * After get callback from OneID, this function help you verify it with public key provided from OneID.
+     *
+     * @return int 1 if the signature is correct, 0 if it is incorrect, and
+     * -1 on error.
+     */
+    public function verifyCallbackSignature($signature, $orderStatus, $orderTransID, $orderID)
+    {
+        $oneIDPubKey = openssl_pkey_get_public(Utilities::readValueFromEnv("ONEID_PUBLIC_KEY"));
+        if ($oneIDPubKey == '') {
+            return -1;
+        }
+        $data = $orderStatus . ";" . $orderTransID . ";" . $orderID;
+        return openssl_verify($data, $signature, $oneIDPubKey);
+    }
 }

@@ -1,4 +1,5 @@
 <?php
+
 namespace OneId;
 
 
@@ -65,7 +66,7 @@ class ApiTestCases extends TestCase
      * @param $responseData
      * @return Client
      */
-    function createMockClient($responseData, $code=200, $msg="OK", $httpCode=200, $httpStatus="OK")
+    function createMockClient($responseData, $code = 200, $msg = "OK", $httpCode = 200, $httpStatus = "OK")
     {
         $body = [
             "meta" => [
