@@ -1,5 +1,4 @@
 <?php
-
 namespace OneId;
 
 use OneId\Api\Client;
@@ -34,6 +33,7 @@ class Order
 
     /**
      * Order constructor.
+     * TODO -o LongPV please comment here
      * @param $callbackURL
      * @param $description
      * @param $amount
@@ -42,7 +42,6 @@ class Order
      * @param $posCode
      * @param null $orderReferenceId
      * @param null $extraData
-     * @todo -o LongPV please comment here
      */
     public function __construct(
         $callbackURL,
