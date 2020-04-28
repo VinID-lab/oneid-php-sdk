@@ -151,12 +151,12 @@ class Order
         if ($signature == '') {
             throw new InvalidParamsException("[OneID] Signature cannot be empty!");
         }
-        $oneIDPubKey = openssl_pkey_get_public(Utilities::readValueFromEnv("ONEID_PUBLIC_KEY"));
+        $oneIDPubKey = Utilities::readValueFromEnv("TEST_SANDBOX_ONEID_PUBLIC_KEY");
         if ($oneIDPubKey == '') {
             throw new InvalidParamsException("[OneID] Public key cannot be empty!");
         }
         $data = $this->status . ";" . $this->transID . ";" . $this->orderID;
-        $ok = openssl_verify($data, $signature, $oneIDPubKey);
+        $ok = openssl_verify($data, base64_decode($signature), $oneIDPubKey, "sha256WithRSAEncryption");
         if ($ok == 1) {
             return true;
         } else if ($ok == 0) {

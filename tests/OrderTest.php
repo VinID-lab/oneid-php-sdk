@@ -153,8 +153,7 @@ class OrderTest extends ApiTestCases
         $order->verifyCallbackSignature($randomSign);
     }
 
-    // TODO: re-check later
-    public function SKIPtestVerifyCallbackSignature_Valid()
+    public function testVerifyCallbackSignature_Valid()
     {
         $callbackURL = Utilities::generateGUID4();
         $description = Utilities::generateGUID4();
@@ -170,36 +169,25 @@ class OrderTest extends ApiTestCases
             $posCode
         );
         $status = "SUCCESS";
-        $transID = "103157783";
-        $orderID = "20200427T00100024436";
+        $transID = "103161447";
+        $orderID = "20200428T00100024850";
         $mockSignature = <<<PKEY
-"zpNoQM10cysCkI4JckcsyB2udcvJKFH+bRowiRVLU│
-mLqndIc1xlYBshNHoqLhOtiNJasJXKE2bzfZdHVI6KJKyU8DjcCVv0sHo1On+/5│
-odgaippi6y0oW9kahdx2IUpng4u7PsPBVq9iE/3pKcCTMBSjoTNCatehQLq3lZI│
-whLvhtYKNk1+pw3W6wdjk1pLatHE57O/eLjmAcsjAR7wY7hYAT8W1eyjnHX6uN7│
-lYX3p8iRUnRJbiveRvTmoIexsuEQoRqDtIf9WmA+RMVSp29O3EY5xpS96rZ4c31│
-V5Y4+jxkpHy4JPmZExOOywt4r+jF7CnP8MqTT4bRw9Gn2HolA==";
+0kH6FwuJgn3/UZyOYZrjNnmJLbC6BllfF0rFasu1rwHV1SbGlTbWSsu2BewPGMqWVsQpxvgzeD+S9hH/mswkNRAx3AbpdlVlSFjGKVInKd4YnXLllFS2KCldNSvl8NqU3T94EHOFrNsnCmB2r4wtnDBbs/AFsmI66DkjWAHgW1vtzdHJBvt/SFygMUhKwRUmtyGPzXDJiuesXoti1mAMTecRrz9dYnoshV7IM/ZqOgnFJT8tkBitXL7wPoL4k5zMKlz7txh4+puRR7xKTLOokGKtPvUpjkV/z51mTp7hP4zdASGdWrFqMwxWUYB7FeJI3k8piJop0/wabPC9Yhcf9g==
 PKEY;
         $order->bindCallback($status, $transID, $orderID);
         $OneIDpubKey = <<<PKEY
 -----BEGIN PUBLIC KEY-----
-MIICITANBgkqhkiG9w0BAQEFAAOCAg4AMIICCQKCAgB6A6heSZCpiyIJgmz7Zpi8
-z4tSYsyNELKblCfCrnfGXIQKDL1jFwyaMpKHofdUKoeDEClJvmqX86dfwKgduVne
-DV8XSMvh0EJ6w/x/datu6abSIQNYfTUIyAmKXH0QV5gaoBTS7rBEk22yqAT+Nmzm
-Ph/SYU7/vedtx0pGFexxD1TtmAbHT1wnKgeZUfcn7DjMYGrNzFyED9vMxf66bIc4
-UYnsUB3MPsgZcBlhnHC5lHiKYoXCPPPc+rX/5OTsi8bEtt19Pe2rr0ZPo6+TRcaa
-ENAFy7+zsT2tcUHLDVvAsfz2lqgh5x5PvI63Zi4oqNNl8YQZdQDohO1Yb94OZemY
-h4/7LTdHDSxQCQd7JBHIhLkrEw70lw9PaltIP7rDakw/BU1EDkBccMpgs+i5OgYi
-iNnjcdrdletJzQJJG9tnnTf2QIVLr4h5NDER0hyx7eC6hr5VJsndJTc708HfZ05p
-+LX8s7MNyNPTgOwXfttrqzxIMQGirC0JGjMsmV0LSAyCjSNjN1PoKljgGDepT5Zl
-klfeQdZHX7OqjAOHYZYiqSCgYc/HzxF2mvZ6LTwu5dWN2o2k3Epf7sxMqAwirOBC
-Q2LP63IRTQ9lak/2R9aGZSM5BAjunnUENaPozWC9Y5FMQCKLXHR5ZAyfwPNtVoD1
-TJMARyLaqc/bVu/uAW3IlwIDAQAB
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0s091d6AhofPYXUVGbzb
+uilPtTLtIaTHPuzf3oNggVcrBMUiaGkWK+cHIDI+y5yi7Kq5+IJ5flvaIbJZVpva
+lvkco9EWBnD4M2YbdhLwEmnzu2FubyctO2UoH1onLAY6w5GZmydnsraQedV0F2BU
+PVchABHLRq8f/ppEhuZIhWZAFmXs67WPhE1dN3HX+FEgCRH3ybf39N0iAuWhYksD
+yV+FnBff7CcbYZoMtu3by8cm5NvXejTX2sWHsuu1KbbUrzUwK1EHb/2Sas0zuAm/
+NSH/k4yitYrTzQ1HcTPr7T0X3bcZzM19vB9C3WPwD/8j9u1nzmSZMkhNTIdYse1m
+QwIDAQAB
 -----END PUBLIC KEY-----
 PKEY;
-
-        putenv("ONEID_PUBLIC_KEY=" . $OneIDpubKey);
-
+        putenv("TEST_SANDBOX_ONEID_PUBLIC_KEY=" . $OneIDpubKey);
+        
         $ok = $order->verifyCallbackSignature($mockSignature);
         $this->assertTrue($ok);
     }
