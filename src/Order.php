@@ -1,4 +1,5 @@
 <?php
+
 namespace OneId;
 
 use OneId\Api\Client;
@@ -22,6 +23,9 @@ class Order
     public $serviceType;
     public $storeCode;
 
+    public $orderID;
+    public $transactionID;
+    public $orderStatus;
     /**
      * @var Client
      */
@@ -29,7 +33,6 @@ class Order
 
     /**
      * Order constructor.
-     * @todo -o LongPV please comment here
      * @param $callbackURL
      * @param $description
      * @param $amount
@@ -38,6 +41,7 @@ class Order
      * @param $posCode
      * @param null $orderReferenceId
      * @param null $extraData
+     * @todo -o LongPV please comment here
      */
     public function __construct(
         $callbackURL,
@@ -45,10 +49,10 @@ class Order
         $amount,
         $storeCode,
         $posCode,
-        $orderReferenceId=null,
-        $extraData=null,
-        $currency="VND"
-        )
+        $orderReferenceId = null,
+        $extraData = null,
+        $currency = "VND"
+    )
     {
         $this->callbackURL = $callbackURL;
         $this->description = $description;
@@ -102,6 +106,24 @@ class Order
     }
 
     /**
+     * Build API body
+     * @return string
+     */
+    protected function buildApiRequestBody_Refund()
+    {
+        $params = [
+            'amount' => $this->amount,
+            'currency' => $this->currency,
+            'description' => $this->description,
+            'merchant_transaction_id' => $this->orderReferenceId,
+            'transaction_id' => $this->transactionID,
+            'user_id' => '',
+            'user_name' => ''
+        ];
+        return json_encode($params);
+    }
+
+    /**
      * Generate a QR image.
      * After you get the image data, please add it to HTML like that:
      * <img href="{qrData}" />
@@ -132,5 +154,22 @@ class Order
         }
         $data = $orderStatus . ";" . $orderTransID . ";" . $orderID;
         return openssl_verify($data, $signature, $oneIDPubKey);
+    }
+
+    /**
+     * Refund OneID order
+     *
+     * @return int 1 if the signature is correct, 0 if it is incorrect, and
+     * -1 on error.
+     */
+    public function refund()
+    {
+        if (!isset($this->orderID) || !isset($this->transactionID)) {
+            return -1;
+        }
+        $body = $this->buildApiRequestBody_Refund();
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("POST", API_ENDPOINT_REFUND, $body);
+        return QRData::createFromResponse($rv);
     }
 }
