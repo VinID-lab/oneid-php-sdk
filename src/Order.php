@@ -2,7 +2,9 @@
 namespace OneId;
 
 use OneId\Api\Client;
+use OneId\Models\A2AOrderData;
 use OneId\Models\QRData;
+use OneId\Models\RefundData;
 use OneId\Models\StatusData;
 use function PHPUnit\Framework\throwException;
 
@@ -24,8 +26,10 @@ class Order
     public $serviceType;
     public $storeCode;
 
-    public $orderID;
+    public $orderId;
     public $userId;
+    public $merchantTransactionId;
+    public $transactionId;
 
     /**
      * @var Client
@@ -163,7 +167,7 @@ class Order
     /**
      * Refund an order.
      *
-     * @return QRData
+     * @return RefundData
      * @throws InvalidPrivateKeyException
      */
     public function refund()
@@ -171,7 +175,7 @@ class Order
         $body = $this->buildApiRequestBody_GenTransactionQr();
         $client = $this->getClient();
         $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
-        return QRData::createFromResponse($rv);
+        return RefundData::createFromResponse($rv);
     }
 
     /**
@@ -182,28 +186,28 @@ class Order
      */
     public function queryOrderStatus()
     {
-        if (empty($this->orderID)) {
+        if (empty($this->orderId)) {
             throwException("[OneID] Order's instance is not contain valid ID!");
         }
         $client = $this->getClient();
-        $rv = $this->getClient()->request("GET", Url::API_ENDPOINT_QUERY_ORDER_STATUS . $this->orderID, "");
+        $rv = $this->getClient()->request("GET", Url::API_ENDPOINT_QUERY_ORDER_STATUS . $this->orderId, "");
         return StatusData::createFromResponse($rv);
     }
 
     /**
-     * Create new order.
+     * Create new App to App order.
      *
      * @return StatusData
      * @throws InvalidPrivateKeyException
      */
-    public function CreateOrder()
+    public function createA2AOrder()
     {
-        if (isset($this->orderID)) {
+        if (isset($this->orderId)) {
             throwException("[OneID] Order's instance already defined!");
         }
         $body = $this->buildApiRequestBody_CreateOrder();
         $client = $this->getClient();
         $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_CREATE_ORDER, $body);
-        return StatusData::createFromResponse($rv);
+        return A2AOrderData::createFromResponse($rv);
     }
 }

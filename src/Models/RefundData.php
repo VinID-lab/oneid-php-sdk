@@ -7,93 +7,63 @@ namespace OneId\Models;
 use OneId\Api\Response;
 
 /**
- * Class QRData Represend data for an QR image
+ * Class RefundData represent data for a Refund Order
  * @package OneId\Models
  */
 class RefundData
 {
     /**
-     * Base64 encoded for qr image's content
      * @var string
      */
-    protected $imgData;
-
-    /**
-     * The link that QR should present
-     * @var string
-     */
-    protected $href;
+    protected $original_transaction_id;
 
     /**
      * @var string
      */
-    protected $orderId;
+    protected $refund_transaction_id;
 
     /**
-     * Timestamp that the QR will expire
-     * @var int
+     * @var string
      */
-    protected $expiration;
+    protected $refund_transaction_wallet_id;
+
+    /**
+     * @return string
+     */
+    public function getOriginalTransactionId()
+    {
+        return $this->original_transaction_id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRefundTransactionId()
+    {
+        return $this->refund_transaction_id;
+    }
+
+    /**
+     * @return string
+     */
+    public function getRefundTransactionWalletId()
+    {
+        return $this->refund_transaction_wallet_id;
+    }
 
     /**
      * Create this QRData from API's response
      * @param Response $response
      *
-     * @return QRData
+     * @return RefundData
      */
     static public function createFromResponse($response)
     {
         $data = $response->getData();
-        $qr = new QRData();
-        $qr->imgData = $data['qr_data'];
-        $qr->href = $data['qr_code'];
-        $qr->orderId = $data['order_id'];
-        $qr->expiration = $data['expiration'];
-        return $qr;
-    }
-
-    /**
-     * @return string
-     */
-    public function getImgData()
-    {
-        return $this->imgData;
-    }
-
-    /**
-     * @return string
-     */
-    public function getHref()
-    {
-        return $this->href;
-    }
-
-    /**
-     * @return string
-     */
-    public function getOrderId()
-    {
-        return $this->orderId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getExpiration()
-    {
-        return $this->expiration;
-    }
-
-    /**
-     * Get value for img tag's src attribute
-     */
-    public function getImgSrcAttr()
-    {
-        return sprintf("data:image/png;base64,{%s}", $this->getImgData());
-    }
-
-    public function __toString()
-    {
-        return $this->getImgSrcAttr();
+        $order = new RefundData();
+        $order->original_transaction_id = $data['original_transaction_id'];
+        $order->refund_transaction_id = $data['refund_transaction_id'];
+        $order->refund_transaction_wallet_id = $data['refund_transaction_wallet_id'];
+        return $order;
     }
 }
