@@ -64,6 +64,10 @@ class ApiTestCases extends TestCase
     /**
      * Return a mocked object that represent an API call with specific response data
      * @param $responseData
+     * @param int $code
+     * @param string $msg
+     * @param int $httpCode
+     * @param string $httpStatus
      * @return Client
      */
     function createMockClient($responseData, $code = 200, $msg = "OK", $httpCode = 200, $httpStatus = "OK")
