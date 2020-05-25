@@ -108,4 +108,118 @@ class OrderTest extends ApiTestCases
         $this->assertEquals($fakeRes['order_id'], $qr->getOrderId());
         $this->assertEquals($fakeRes['expiration'], $qr->getExpiration());
     }
+
+    public function testRefund()
+    {
+        $amount = 10012;
+        $currency = "VND";
+        $description = "Refund from Unit test";
+        $merchant_transaction_id = "SOME TRANS ID THIS";
+        $transaction_id = "SOME TRANS ID THIS";
+        $user_id = "USER_ID";
+
+        $order = new Order();
+        $order->orderId = 1;
+        $order->amount = $amount;
+        $order->currency = $currency;
+        $order->description = $description;
+        $order->merchantTransactionId = $merchant_transaction_id;
+        $order->transactionId = $transaction_id;
+        $order->userId = $user_id;
+
+        $fakeRes = new \stdClass();
+        $fakeRes->meta = new \stdClass();
+        $fakeRes->data = new \stdClass();
+        $fakeRes->meta->code = 200;
+        $fakeRes->meta->message = "OK";
+        $fakeRes->data->original_transaction_id = "SOME TRANS ID THIS";
+        $fakeRes->data->refund_transaction_id = "SOME REFUND ID THAT";
+        $fakeRes->data->refund_transaction_wallet_id = "SOME WALLET TRANS ID";
+        $client = $this->createMockClient($fakeRes);
+        $order->bindClient($client);
+
+        $order = $order->refund();
+
+        $this->assertEquals($fakeRes->data->code, 200);
+        $this->assertEquals($fakeRes->data->original_transaction_id, $order->getOriginalTransactionId());
+        $this->assertEquals($fakeRes->data->refund_transaction_id, $order->getRefundTransactionId());
+        $this->assertEquals($fakeRes->data->refund_transaction_wallet_id, $order->getRefundTransactionWalletId());
+    }
+
+    public function testCreateOrder()
+    {
+        $callbackURL = "http://localhost";
+        $description = "Refund from Unit test";
+        $amount = 10012;
+        $storeCode = Utilities::generateGUID4();
+        $posCode = Utilities::generateGUID4();
+
+        $order = new Order(
+            $callbackURL,
+            $description,
+            $amount,
+            $storeCode,
+            $posCode
+        );
+        $order->orderId = "20190101T00300000001";
+
+        $fakeRes = new \stdClass();
+        $fakeRes->meta = new \stdClass();
+        $fakeRes->data = new \stdClass();
+        $fakeRes->meta->code = 200;
+        $fakeRes->meta->message = "OK";
+        $fakeRes->data->signature = "";
+        $fakeRes->data->order_id = "20190101T00300000001";
+        $fakeRes->data->expired_at = 1590397921;
+        $client = $this->createMockClient($fakeRes);
+        $order->bindClient($client);
+
+        $order = $order->createA2AOrder();
+
+
+        $this->assertEquals($fakeRes->data->code, 200);
+        $this->assertEquals($fakeRes->data->signature, "");
+        $this->assertEquals($fakeRes->data->order_id, $order->getOrderId());
+    }
+
+    public function testQueryOrderStatus()
+    {
+        $callbackURL = "http://localhost";
+        $description = "Refund from Unit test";
+        $amount = 10012;
+        $storeCode = Utilities::generateGUID4();
+        $posCode = Utilities::generateGUID4();
+
+        $order = new Order(
+            $callbackURL,
+            $description,
+            $amount,
+            $storeCode,
+            $posCode
+        );
+        $order->orderId = "20190101T00300000001";
+
+        $fakeRes = new \stdClass();
+        $fakeRes->meta = new \stdClass();
+        $fakeRes->data = new \stdClass();
+        $fakeRes->meta->code = 200;
+        $fakeRes->meta->message = "OK";
+        $fakeRes->data->merchant_user_id = "";
+        $fakeRes->data->order_amount = 10000;
+        $fakeRes->data->order_id = "20190101T00300000001";
+        $fakeRes->data->pay_status = "SUCCESS";
+        $fakeRes->data->point_amount = 0;
+        $fakeRes->data->transaction_id = 0;
+        $fakeRes->data->updated_at = 0;
+        $fakeRes->data->vnd_amount = 10000;
+        $client = $this->createMockClient($fakeRes);
+        $order->bindClient($client);
+
+        $order = $order->queryOrderStatus();
+
+
+        $this->assertEquals($fakeRes->data->code, 200);
+        $this->assertEquals($fakeRes->data->order_id, $order->getOrderId());
+        $this->assertEquals($fakeRes->data->pay_status, "SUCCESS");
+    }
 }
