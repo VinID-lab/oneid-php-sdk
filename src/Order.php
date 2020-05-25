@@ -1,8 +1,12 @@
 <?php
 namespace OneId;
 
+use Exception;
 use OneId\Api\Client;
+use OneId\Models\A2AOrderData;
 use OneId\Models\QRData;
+use OneId\Models\RefundData;
+use OneId\Models\StatusData;
 
 /**
  * This class provide all order's feature with OneId
@@ -44,6 +48,7 @@ class Order
      * @param $posCode
      * @param null $orderReferenceId
      * @param null $extraData
+     * @throws Exception
      */
     public function __construct(
         $callbackURL,
@@ -57,7 +62,7 @@ class Order
     )
     {
         if (isset($this->orderID)) {
-            throw new \Exception("[VinID] This order already processed!");
+            throw new Exception("[VinID] This order already processed!");
         }
 
         $this->callbackURL = $callbackURL;
@@ -126,6 +131,27 @@ class Order
     }
 
     /**
+     * Build API body
+     * @return string
+     */
+    protected function buildApiRequestBody_CreateOrder()
+    {
+        $params = [
+            'extra_data' => $this->extraData,
+            'order_reference_id' => $this->orderReferenceId,
+            'order_currency' => $this->currency,
+            'store_code' => $this->storeCode,
+            'description' => $this->description,
+            'callback_url' => $this->callbackURL,
+            'pos_code' => $this->posCode,
+            'order_amount' => $this->amount,
+            'service_type' => $this->serviceType,
+            'user_id' => $this->userId,
+        ];
+        return json_encode($params);
+    }
+
+    /**
      * Generate a QR image.
      * After you get the image data, please add it to HTML like that:
      * <img href="{qrData}" />
@@ -164,7 +190,56 @@ class Order
         } else if ($ok == 0) {
             return false;
         } else {
-            throw new \Exception("[OneID] Verify failed with OpenSSL!");
+            throw new Exception("[OneID] Verify failed with OpenSSL!");
         }
+    }
+
+    /**
+     * Refund an order.
+     *
+     * @return RefundData
+     * @throws InvalidPrivateKeyException
+     */
+    public function refund()
+    {
+        $body = $this->buildApiRequestBody_GenTransactionQr();
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
+        return RefundData::createFromResponse($rv);
+    }
+
+    /**
+     * Check current order status.
+     *
+     * @return StatusData
+     * @throws InvalidPrivateKeyException
+     * @throws InvalidParamsException
+     */
+    public function queryOrderStatus()
+    {
+        if (empty($this->orderId)) {
+            throw new InvalidParamsException("[OneID] Order's instance is not contain valid ID!");
+        }
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("GET", Url::API_ENDPOINT_QUERY_ORDER_STATUS . $this->orderId, "");
+        return StatusData::createFromResponse($rv);
+    }
+
+    /**
+     * Create new App to App order.
+     *
+     * @return StatusData
+     * @throws InvalidPrivateKeyException
+     * @throws InvalidParamsException
+     */
+    public function createA2AOrder()
+    {
+        if (isset($this->orderId)) {
+            throw new InvalidParamsException("[OneID] Order's instance already defined!");
+        }
+        $body = $this->buildApiRequestBody_CreateOrder();
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_CREATE_ORDER, $body);
+        return A2AOrderData::createFromResponse($rv);
     }
 }

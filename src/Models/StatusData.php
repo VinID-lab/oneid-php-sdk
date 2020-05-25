@@ -67,7 +67,7 @@ class StatusData
      */
     public function getOrderId()
     {
-        return $this->orderId;
+        return $this->order_id;
     }
 
     /**
