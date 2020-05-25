@@ -3,6 +3,8 @@ namespace OneId;
 
 use OneId\Api\Client;
 use OneId\Models\QRData;
+use OneId\Models\StatusData;
+use function PHPUnit\Framework\throwException;
 
 /**
  * This class provide all order's feature with OneId
@@ -21,6 +23,9 @@ class Order
     public $posCode;
     public $serviceType;
     public $storeCode;
+
+    public $orderID;
+    public $userId;
 
     /**
      * @var Client
@@ -102,6 +107,27 @@ class Order
     }
 
     /**
+     * Build API body
+     * @return string
+     */
+    protected function buildApiRequestBody_CreateOrder()
+    {
+        $params = [
+            'extra_data' => $this->extraData,
+            'order_reference_id' => $this->orderReferenceId,
+            'order_currency' => $this->currency,
+            'store_code' => $this->storeCode,
+            'description' => $this->description,
+            'callback_url' => $this->callbackURL,
+            'pos_code' => $this->posCode,
+            'order_amount' => $this->amount,
+            'service_type' => $this->serviceType,
+            'user_id' => $this->userId,
+        ];
+        return json_encode($params);
+    }
+
+    /**
      * Generate a QR image.
      * After you get the image data, please add it to HTML like that:
      * <img href="{qrData}" />
@@ -132,5 +158,52 @@ class Order
         }
         $data = $orderStatus . ";" . $orderTransID . ";" . $orderID;
         return openssl_verify($data, $signature, $oneIDPubKey);
+    }
+
+    /**
+     * Refund an order.
+     *
+     * @return QRData
+     * @throws InvalidPrivateKeyException
+     */
+    public function refund()
+    {
+        $body = $this->buildApiRequestBody_GenTransactionQr();
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
+        return QRData::createFromResponse($rv);
+    }
+
+    /**
+     * Check current order status.
+     *
+     * @return StatusData
+     * @throws InvalidPrivateKeyException
+     */
+    public function queryOrderStatus()
+    {
+        if (empty($this->orderID)) {
+            throwException("[OneID] Order's instance is not contain valid ID!");
+        }
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("GET", Url::API_ENDPOINT_QUERY_ORDER_STATUS . $this->orderID, "");
+        return StatusData::createFromResponse($rv);
+    }
+
+    /**
+     * Create new order.
+     *
+     * @return StatusData
+     * @throws InvalidPrivateKeyException
+     */
+    public function CreateOrder()
+    {
+        if (isset($this->orderID)) {
+            throwException("[OneID] Order's instance already defined!");
+        }
+        $body = $this->buildApiRequestBody_CreateOrder();
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_CREATE_ORDER, $body);
+        return StatusData::createFromResponse($rv);
     }
 }
