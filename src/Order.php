@@ -2,11 +2,7 @@
 namespace OneId;
 
 use OneId\Api\Client;
-use OneId\Models\A2AOrderData;
 use OneId\Models\QRData;
-use OneId\Models\RefundData;
-use OneId\Models\StatusData;
-use function PHPUnit\Framework\throwException;
 
 /**
  * This class provide all order's feature with OneId
@@ -30,6 +26,7 @@ class Order
     public $userId;
     public $merchantTransactionId;
     public $transactionId;
+    public $status;
 
     /**
      * @var Client
@@ -38,7 +35,7 @@ class Order
 
     /**
      * Order constructor.
-     * @todo -o LongPV please comment here
+     * TODO -o LongPV please comment here
      * @param $callbackURL
      * @param $description
      * @param $amount
@@ -54,11 +51,15 @@ class Order
         $amount,
         $storeCode,
         $posCode,
-        $orderReferenceId=null,
-        $extraData=null,
-        $currency="VND"
-        )
+        $orderReferenceId = null,
+        $extraData = null,
+        $currency = "VND"
+    )
     {
+        if (isset($this->orderID)) {
+            throw new \Exception("[VinID] This order already processed!");
+        }
+
         $this->callbackURL = $callbackURL;
         $this->description = $description;
         $this->extraData = $extraData;
@@ -91,6 +92,20 @@ class Order
     }
 
     /**
+     * Bind callback into an Order.
+     *
+     * @param $status
+     * @param $transID
+     * @param $orderID
+     */
+    public function bindCallback($status, $transID, $orderID)
+    {
+        $this->status = $status;
+        $this->transID = $transID;
+        $this->orderID = $orderID;
+    }
+
+    /**
      * Build API body
      * @return string
      */
@@ -106,27 +121,6 @@ class Order
             'pos_code' => $this->posCode,
             'service_type' => $this->serviceType,
             'store_code' => $this->storeCode
-        ];
-        return json_encode($params);
-    }
-
-    /**
-     * Build API body
-     * @return string
-     */
-    protected function buildApiRequestBody_CreateOrder()
-    {
-        $params = [
-            'extra_data' => $this->extraData,
-            'order_reference_id' => $this->orderReferenceId,
-            'order_currency' => $this->currency,
-            'store_code' => $this->storeCode,
-            'description' => $this->description,
-            'callback_url' => $this->callbackURL,
-            'pos_code' => $this->posCode,
-            'order_amount' => $this->amount,
-            'service_type' => $this->serviceType,
-            'user_id' => $this->userId,
         ];
         return json_encode($params);
     }
@@ -150,64 +144,27 @@ class Order
     /**
      * Verify OneID callback
      * After get callback from OneID, this function help you verify it with public key provided from OneID.
-     *
-     * @return int 1 if the signature is correct, 0 if it is incorrect, and
-     * -1 on error.
+     * @param $signature
+     * @return bool true if signature valid, false if signature invalid
+     * @throws InvalidParamsException
      */
-    public function verifyCallbackSignature($signature, $orderStatus, $orderTransID, $orderID)
+    public function verifyCallbackSignature($signature)
     {
-        $oneIDPubKey = openssl_pkey_get_public(Utilities::readValueFromEnv("ONEID_PUBLIC_KEY"));
+        if ($signature == '') {
+            throw new InvalidParamsException("[OneID] Signature cannot be empty!");
+        }
+        $oneIDPubKey = Utilities::readValueFromEnv("TEST_SANDBOX_ONEID_PUBLIC_KEY");
         if ($oneIDPubKey == '') {
-            return -1;
+            throw new InvalidParamsException("[OneID] Public key cannot be empty!");
         }
-        $data = $orderStatus . ";" . $orderTransID . ";" . $orderID;
-        return openssl_verify($data, $signature, $oneIDPubKey);
-    }
-
-    /**
-     * Refund an order.
-     *
-     * @return RefundData
-     * @throws InvalidPrivateKeyException
-     */
-    public function refund()
-    {
-        $body = $this->buildApiRequestBody_GenTransactionQr();
-        $client = $this->getClient();
-        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
-        return RefundData::createFromResponse($rv);
-    }
-
-    /**
-     * Check current order status.
-     *
-     * @return StatusData
-     * @throws InvalidPrivateKeyException
-     */
-    public function queryOrderStatus()
-    {
-        if (empty($this->orderId)) {
-            throwException("[OneID] Order's instance is not contain valid ID!");
+        $data = $this->status . ";" . $this->transID . ";" . $this->orderID;
+        $ok = openssl_verify($data, base64_decode($signature), $oneIDPubKey, "sha256WithRSAEncryption");
+        if ($ok == 1) {
+            return true;
+        } else if ($ok == 0) {
+            return false;
+        } else {
+            throw new \Exception("[OneID] Verify failed with OpenSSL!");
         }
-        $client = $this->getClient();
-        $rv = $this->getClient()->request("GET", Url::API_ENDPOINT_QUERY_ORDER_STATUS . $this->orderId, "");
-        return StatusData::createFromResponse($rv);
-    }
-
-    /**
-     * Create new App to App order.
-     *
-     * @return StatusData
-     * @throws InvalidPrivateKeyException
-     */
-    public function createA2AOrder()
-    {
-        if (isset($this->orderId)) {
-            throwException("[OneID] Order's instance already defined!");
-        }
-        $body = $this->buildApiRequestBody_CreateOrder();
-        $client = $this->getClient();
-        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_CREATE_ORDER, $body);
-        return A2AOrderData::createFromResponse($rv);
     }
 }
