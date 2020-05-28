@@ -33,6 +33,7 @@ class Order
 
     /**
      * Order constructor.
+     * TODO -o LongPV please comment here
      * @param $callbackURL
      * @param $description
      * @param $amount
@@ -54,6 +55,10 @@ class Order
         $currency = "VND"
     )
     {
+        if (isset($this->orderID)) {
+            throw new \Exception("[VinID] This order already processed!");
+        }
+
         $this->callbackURL = $callbackURL;
         $this->description = $description;
         $this->extraData = $extraData;
@@ -83,6 +88,20 @@ class Order
     public function bindClient($client)
     {
         $this->_client = $client;
+    }
+
+    /**
+     * Bind callback into an Order.
+     *
+     * @param $status
+     * @param $transID
+     * @param $orderID
+     */
+    public function bindCallback($status, $transID, $orderID)
+    {
+        $this->status = $status;
+        $this->transID = $transID;
+        $this->orderID = $orderID;
     }
 
     /**
@@ -142,18 +161,28 @@ class Order
     /**
      * Verify OneID callback
      * After get callback from OneID, this function help you verify it with public key provided from OneID.
-     *
-     * @return int 1 if the signature is correct, 0 if it is incorrect, and
-     * -1 on error.
+     * @param $signature
+     * @return bool true if signature valid, false if signature invalid
+     * @throws InvalidParamsException
      */
-    public function verifyCallbackSignature($signature, $orderStatus, $orderTransID, $orderID)
+    public function verifyCallbackSignature($signature)
     {
-        $oneIDPubKey = openssl_pkey_get_public(Utilities::readValueFromEnv("ONEID_PUBLIC_KEY"));
-        if ($oneIDPubKey == '') {
-            return -1;
+        if ($signature == '') {
+            throw new InvalidParamsException("[OneID] Signature cannot be empty!");
         }
-        $data = $orderStatus . ";" . $orderTransID . ";" . $orderID;
-        return openssl_verify($data, $signature, $oneIDPubKey);
+        $oneIDPubKey = Utilities::readValueFromEnv("TEST_SANDBOX_ONEID_PUBLIC_KEY");
+        if ($oneIDPubKey == '') {
+            throw new InvalidParamsException("[OneID] Public key cannot be empty!");
+        }
+        $data = $this->status . ";" . $this->transID . ";" . $this->orderID;
+        $ok = openssl_verify($data, base64_decode($signature), $oneIDPubKey, "sha256WithRSAEncryption");
+        if ($ok == 1) {
+            return true;
+        } else if ($ok == 0) {
+            return false;
+        } else {
+            throw new \Exception("[OneID] Verify failed with OpenSSL!");
+        }
     }
 
     /**
