@@ -1,4 +1,5 @@
 <?php
+
 namespace OneId;
 
 use Exception;
@@ -28,6 +29,7 @@ class Order
 
     public $orderId;
     public $userId;
+    public $username;
     public $merchantTransactionId;
     public $transactionId;
     public $status;
@@ -39,15 +41,17 @@ class Order
 
     /**
      * Order constructor.
-     * TODO -o LongPV please comment here
+     *
      * @param $callbackURL
      * @param $description
      * @param $amount
-     * @param $currency
      * @param $storeCode
      * @param $posCode
      * @param null $orderReferenceId
      * @param null $extraData
+     * @param string $currency
+     * @param string $userId
+     * @param string $username
      * @throws Exception
      */
     public function __construct(
@@ -58,7 +62,9 @@ class Order
         $posCode,
         $orderReferenceId = null,
         $extraData = null,
-        $currency = "VND"
+        $currency = "VND",
+        $userId = "",
+        $username = ""
     )
     {
         if (isset($this->orderID)) {
@@ -74,6 +80,8 @@ class Order
         $this->posCode = $posCode;
         $this->serviceType = "PURCHASE";
         $this->storeCode = $storeCode;
+        $this->userId = $userId;
+        $this->username = $username;
     }
 
     /**
@@ -106,8 +114,8 @@ class Order
     public function bindCallback($status, $transID, $orderID)
     {
         $this->status = $status;
-        $this->transID = $transID;
-        $this->orderID = $orderID;
+        $this->transactionId = $transID;
+        $this->orderId = $orderID;
     }
 
     /**
@@ -146,7 +154,7 @@ class Order
             'pos_code' => $this->posCode,
             'order_amount' => $this->amount,
             'service_type' => $this->serviceType,
-            'user_id' => $this->userId,
+            'user_id' => $this->userId
         ];
         return json_encode($params);
     }
@@ -228,9 +236,9 @@ class Order
     /**
      * Create new App to App order.
      *
-     * @return StatusData
-     * @throws InvalidPrivateKeyException
+     * @return A2AOrderData
      * @throws InvalidParamsException
+     * @throws InvalidPrivateKeyException
      */
     public function createA2AOrder()
     {
