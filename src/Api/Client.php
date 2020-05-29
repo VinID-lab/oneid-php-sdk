@@ -5,6 +5,7 @@ namespace OneId\Api;
 use OneId\Api\NonceManager\iNonceManager;
 use OneId\Api\NonceManager\RandomNonceManager;
 use OneId\Utilities;
+use OneId\Url;
 
 class Client
 {
@@ -81,9 +82,9 @@ class Client
             if (is_null($baseUrl)) {
                 $oneIdEnv = strtolower(Utilities::readValueFromEnv("ONEID_ENV", "sandbox"));
                 if ($oneIdEnv == "prod" || $oneIdEnv == "production") {
-                    $baseUrl = API_BASEURL_PRODUCTION;
+                    $baseUrl = Url::API_BASEURL_PRODUCTION;
                 } else {
-                    $baseUrl = API_BASEURL_SANDBOX;
+                    $baseUrl = Url::API_BASEURL_SANDBOX;
                 }
             }
             $this->baseUrl = $baseUrl;
@@ -144,7 +145,9 @@ class Client
     {
         $req = $this->prepareRequest($method, $url, $body, $nonce, $timestamp);
         $curl = curl_init($this->getApiEndPoint($url));
-
+        print_r(PHP_EOL);
+        print_r("REQUEST".PHP_EOL);
+        print_r($req->getEncodedBody().PHP_EOL);
 //        curl_setopt($ch, CURLOPT_URL, $this->getApiEndPoint($url));
         if ($method == 'POST') {
             curl_setopt($curl, CURLOPT_POST, 1);
@@ -160,7 +163,7 @@ class Client
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         $responseText = curl_exec($curl);
-
+        print_r($responseText);
         if ($responseText === false) {
             trigger_error(curl_error($curl), E_USER_WARNING);
             return null;

@@ -2,7 +2,12 @@
   "name": "oneid/integration",
   "type": "library",
   "description": "Library to communicate with VinID platform",
-  "keywords": ["oneid", "vinid", "payment","php"],
+  "keywords": [
+    "oneid",
+    "vinid",
+    "payment",
+    "php"
+  ],
   "homepage": "https://developers.vinid.net",
   "license": "MIT",
   "authors": [
@@ -19,5 +24,10 @@
   },
   "require": {
     "ext-curl": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "OneId\\":"src/"
+    }
   }
 }

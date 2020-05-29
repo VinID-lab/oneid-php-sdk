@@ -24,6 +24,7 @@ class Request
      */
     public function getEncodedBody()
     {
+//        return $this->body; // LongPV2 - fix bug JSON ENCODE twice
         return json_encode($this->body);
     }
 

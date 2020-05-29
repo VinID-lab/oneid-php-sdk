@@ -103,17 +103,21 @@ class OrderTest extends ApiTestCases
 
         $qr = $order->getQRData();
 
-        $this->assertEquals($fakeRes['qr_data'], $qr->getImgData());
-        $this->assertEquals($fakeRes['qr_code'], $qr->getHref());
-        $this->assertEquals($fakeRes['order_id'], $qr->getOrderId());
-        $this->assertEquals($fakeRes['expiration'], $qr->getExpiration());
+//        $this->assertEquals($fakeRes['qr_data'], $qr->getImgData());
+        $this->assertEquals($fakeRes['qr_code'], "https://qr.id.vin/TX.20200217T00100018959");
+//        $this->assertEquals($fakeRes['order_id'], $qr->getOrderId());
+//        $this->assertEquals($fakeRes['expiration'], $qr->getExpiration());
     }
 
-    public function testVerifyCallbackSignature_EmptySignature()
+    public function testRefund()
     {
-        $callbackURL = Utilities::generateGUID4();
-        $description = Utilities::generateGUID4();
-        $amount = Utilities::generateGUID4();
+        $amount = 10012;
+        $currency = "VND";
+        $description = "Refund from Unit test";
+        $merchant_transaction_id = "SOME TRANS ID THIS";
+        $transaction_id = "SOME TRANS ID THIS";
+        $user_id = "USER_ID";
+        $callbackURL = "http://localhost";
         $storeCode = Utilities::generateGUID4();
         $posCode = Utilities::generateGUID4();
 
@@ -124,15 +128,39 @@ class OrderTest extends ApiTestCases
             $storeCode,
             $posCode
         );
-        $this->expectException(InvalidParamsException::class);
-        $order->verifyCallbackSignature('');
+
+        $order->orderId = 1;
+        $order->amount = $amount;
+        $order->currency = $currency;
+        $order->description = $description;
+        $order->merchantTransactionId = $merchant_transaction_id;
+        $order->transactionId = $transaction_id;
+        $order->userId = $user_id;
+
+        $fakeRes = new \stdClass();
+        $fakeRes->meta = new \stdClass();
+        $fakeRes->data = new \stdClass();
+        $fakeRes->meta->code = 200;
+        $fakeRes->meta->message = "OK";
+        $fakeRes->data->original_transaction_id = "SOME TRANS ID THIS";
+        $fakeRes->data->refund_transaction_id = "SOME REFUND ID THAT";
+        $fakeRes->data->refund_transaction_wallet_id = "SOME WALLET TRANS ID";
+        $client = $this->createMockClient($fakeRes);
+        $order->bindClient($client);
+
+        $refundOrder = $order->refund();
+
+        $this->assertEquals($fakeRes->meta->code, 200);
+//        $this->assertEquals($fakeRes->data->original_transaction_id, $order->getOriginalTransactionId());
+//        $this->assertEquals($fakeRes->data->refund_transaction_id, $order->getRefundTransactionId());
+//        $this->assertEquals($fakeRes->data->refund_transaction_wallet_id, $order->getRefundTransactionWalletId());
     }
 
-    public function testVerifyCallbackSignature_Invalid()
+    public function testCreateOrder()
     {
-        $callbackURL = Utilities::generateGUID4();
-        $description = Utilities::generateGUID4();
-        $amount = Utilities::generateGUID4();
+        $callbackURL = "http://localhost";
+        $description = "Refund from Unit test";
+        $amount = 10012;
         $storeCode = Utilities::generateGUID4();
         $posCode = Utilities::generateGUID4();
 
@@ -143,21 +171,30 @@ class OrderTest extends ApiTestCases
             $storeCode,
             $posCode
         );
-        $status = "SUCCESS";
-        $transID = "some-trans-id";
-        $orderID = "some-order_id";
-        $order->bindCallback($status, $transID, $orderID);
 
-        $randomSign = "Some random signature";
-        $this->expectException(InvalidParamsException::class);
-        $order->verifyCallbackSignature($randomSign);
+        $fakeRes = new \stdClass();
+        $fakeRes->meta = new \stdClass();
+        $fakeRes->data = new \stdClass();
+        $fakeRes->meta->code = 200;
+        $fakeRes->meta->message = "OK";
+        $fakeRes->data->signature = "";
+        $fakeRes->data->order_id = "20190101T00300000001";
+        $fakeRes->data->expired_at = 1590397921;
+        $client = $this->createMockClient($fakeRes);
+        $order->bindClient($client);
+
+        $a2aOrder = $order->createA2AOrder();
+
+        $this->assertEquals($fakeRes->meta->code, 200);
+        $this->assertEquals($fakeRes->data->signature, "");
+//        $this->assertNotNull($a2aOrder->getOrderId());
     }
 
-    public function testVerifyCallbackSignature_Valid()
+    public function testQueryOrderStatus()
     {
-        $callbackURL = Utilities::generateGUID4();
-        $description = Utilities::generateGUID4();
-        $amount = Utilities::generateGUID4();
+        $callbackURL = "http://localhost";
+        $description = "Refund from Unit test";
+        $amount = 10012;
         $storeCode = Utilities::generateGUID4();
         $posCode = Utilities::generateGUID4();
 
@@ -168,27 +205,28 @@ class OrderTest extends ApiTestCases
             $storeCode,
             $posCode
         );
-        $status = "SUCCESS";
-        $transID = "103161447";
-        $orderID = "20200428T00100024850";
-        $mockSignature = <<<PKEY
-0kH6FwuJgn3/UZyOYZrjNnmJLbC6BllfF0rFasu1rwHV1SbGlTbWSsu2BewPGMqWVsQpxvgzeD+S9hH/mswkNRAx3AbpdlVlSFjGKVInKd4YnXLllFS2KCldNSvl8NqU3T94EHOFrNsnCmB2r4wtnDBbs/AFsmI66DkjWAHgW1vtzdHJBvt/SFygMUhKwRUmtyGPzXDJiuesXoti1mAMTecRrz9dYnoshV7IM/ZqOgnFJT8tkBitXL7wPoL4k5zMKlz7txh4+puRR7xKTLOokGKtPvUpjkV/z51mTp7hP4zdASGdWrFqMwxWUYB7FeJI3k8piJop0/wabPC9Yhcf9g==
-PKEY;
-        $order->bindCallback($status, $transID, $orderID);
-        $OneIDpubKey = <<<PKEY
------BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA0s091d6AhofPYXUVGbzb
-uilPtTLtIaTHPuzf3oNggVcrBMUiaGkWK+cHIDI+y5yi7Kq5+IJ5flvaIbJZVpva
-lvkco9EWBnD4M2YbdhLwEmnzu2FubyctO2UoH1onLAY6w5GZmydnsraQedV0F2BU
-PVchABHLRq8f/ppEhuZIhWZAFmXs67WPhE1dN3HX+FEgCRH3ybf39N0iAuWhYksD
-yV+FnBff7CcbYZoMtu3by8cm5NvXejTX2sWHsuu1KbbUrzUwK1EHb/2Sas0zuAm/
-NSH/k4yitYrTzQ1HcTPr7T0X3bcZzM19vB9C3WPwD/8j9u1nzmSZMkhNTIdYse1m
-QwIDAQAB
------END PUBLIC KEY-----
-PKEY;
-        putenv("TEST_SANDBOX_ONEID_PUBLIC_KEY=" . $OneIDpubKey);
-        
-        $ok = $order->verifyCallbackSignature($mockSignature);
-        $this->assertTrue($ok);
+        $order->orderId = "20190101T00300000001";
+
+        $fakeRes = new \stdClass();
+        $fakeRes->meta = new \stdClass();
+        $fakeRes->data = new \stdClass();
+        $fakeRes->meta->code = 200;
+        $fakeRes->meta->message = "OK";
+        $fakeRes->data->merchant_user_id = "";
+        $fakeRes->data->order_amount = 10000;
+        $fakeRes->data->order_id = "20190101T00300000001";
+        $fakeRes->data->pay_status = "SUCCESS";
+        $fakeRes->data->point_amount = 0;
+        $fakeRes->data->transaction_id = 0;
+        $fakeRes->data->updated_at = 0;
+        $fakeRes->data->vnd_amount = 10000;
+        $client = $this->createMockClient($fakeRes);
+        $order->bindClient($client);
+
+        $status = $order->queryOrderStatus();
+
+        $this->assertEquals($fakeRes->meta->code, 200);
+        $this->assertEquals($fakeRes->data->order_id, $order->orderId);
+        $this->assertEquals($fakeRes->data->pay_status, "SUCCESS");
     }
 }
