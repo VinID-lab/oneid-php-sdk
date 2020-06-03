@@ -69,7 +69,11 @@ class Response
 
         $this->body = json_decode($body, true);
         $this->meta = $this->body['meta'];
-        $this->data = $this->body['data'];
+        if (!is_null($this->data)) {
+            $this->data = $this->body['data'];
+        } else {
+            $this->data = null;
+        }
     }
 
     /**

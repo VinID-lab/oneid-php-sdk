@@ -27,7 +27,7 @@ Hoặc clone repo và sử dụng thư mục `src`
 
 ## Khởi tạo client
 
-Xem quy trình tích hợp tại [https://developers.vinid.net/gioi-thieu-chung-1/huong-dan-quy-trinh-tich-hop-chung#4.-B%E1%BA%A3o-m%E1%BA%ADt] 
+Xem quy trình tích hợp tại [https://developers.vinid.net/gioi-thieu-chung/huong-dan-quy-trinh-tich-hop-chung] 
 
 Có 2 cách để khởi tạo client:
 

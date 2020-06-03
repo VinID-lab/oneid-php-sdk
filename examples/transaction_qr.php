@@ -1,20 +1,11 @@
 <?php
 
-namespace OneId;
+require 'vendor/autoload.php';
 
+use OneId\Order;
 
-use OneId\Api\Client;
-use OneId\Api\Response;
-use PHPUnit\Framework\TestCase;
-
-require_once(join(DIRECTORY_SEPARATOR, array(
-    __DIR__,
-    "..",
-    "src",
-    "autoload.php"
-)));
-
-const TEST_PRIVATE_KEY = <<<PKEY
+$apiKey = '28f04867-c6d5-425f-9108-0d90a0c0b09e';
+$privatekey = <<<PKEY
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpQIBAAKCAQEA6M9OQrNz6tC36ehKYiH+5/AUi7Vorf772OzFYebztnGEm0vi
 PsD2Rs8nB1SibzdSOXN9NSLb81cmN01MaQO7m6jD4yyCjXcCgHcGBm5SpC2/3ZTv
@@ -44,46 +35,29 @@ NDYYB1O4E5bCJHazBSz5jsc/UyxbTwax1vVGr2aXIgsbLVAoQoZzznM=
 -----END RSA PRIVATE KEY-----
 PKEY;
 
-const TEST_PUBLIC_KEY = <<<PKEY
------BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArhgQ/t9K9zZ/gG+GxOfS
-1nsUYWOm5s+giLrVlGMsN2zQVVWu92qfvYT8jqdpAdpzXUnvBjX/iY13/NUTG8gA
-b0aXcOBJUtxiTScWjQ69a/FrRPyAIdGE3okLE3Gn1MF+FsegCYoHfg42NBzhvPxB
-S8bmAHe8NBJS/PnY3MFD4ZxxtoDtESAeYwiJHmFZiCVyizAvIDE3wZ2LWg+eq6cW
-k1gUnjL8L1bJiX1U5Sl5eFnKXSBg2EqjSJXqYJzDZ+m3zDizrcU+lfDdHwXfnOzg
-sfdgRroipkAZSCoGOyxtSM2ASiGiYjVfE+Lf0iv4n3FvcDDdUdEcl2pw6chHYxZE
-zwIDAQAB
------END PUBLIC KEY-----
-PKEY;
+putenv("ONEID_API_KEY=".$apiKey);
+putenv("ONEID_PRIVATE_KEY=".$privatekey);
 
-const TEST_API_KEY = "28f04867-c6d5-425f-9108-0d90a0c0b09e";
+$callbackURL = "https://localhost";
+$description = "This is a sample order";
+$amount = 10000; // In VND
+$storeCode = "SBLONGPV2";
+$posCode = "SBLONGPV2";
+$orderReferenceId = "order's ID in your system.";
 
+$order = new Order(
+    $callbackURL,
+    $description,
+    $amount,
+    $storeCode,
+    $posCode,
+    $orderReferenceId
+);
 
-class ApiTestCases extends TestCase
-{
-    /**
-     * Return a mocked object that represent an API call with specific response data
-     * @param $responseData
-     * @param int $code
-     * @param string $msg
-     * @param int $httpCode
-     * @param string $httpStatus
-     * @return Client
-     */
-    function createMockClient($responseData, $code = 200, $msg = "OK", $httpCode = 200, $httpStatus = "OK")
-    {
-        $body = [
-            "meta" => [
-                "code" => $code,
-                "message" => $msg,
-            ],
-            "data" => $responseData,
-        ];
-        $body = json_encode($body);
-        $headers = sprintf("HTTP/1.1 %d %s", $httpCode, $httpStatus);
-        $response = new Response($body, $headers);
-        $mock = $this->createMock(Client::class);
-        $mock->method("request")->willReturn($response);
-        return $mock;
-    }
-}
+$qr = $order->getQRData();
+
+// print to HTML Img tag
+// printf('<img src="%s" />', $qr->getImgSrcAttr());
+
+// print to console
+print_r($qr->getImgData());

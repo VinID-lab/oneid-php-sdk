@@ -10,46 +10,25 @@ use OneId\Api\Response;
  * Class QRData Represend data for an QR image
  * @package OneId\Models
  */
-class QRData
+class A2AOrderData
 {
-    /**
-     * Base64 encoded for qr image's content
-     * @var string
-     */
-    protected $imgData;
 
-    /**
-     * The link that QR should present
-     * @var string
-     */
-    protected $href;
-
-    /**
-     * @var string
-     */
-    protected $orderId;
-
-    /**
-     * Timestamp that the QR will expire
-     * @var int
-     */
-    protected $expiration;
 
     /**
      * Create this QRData from API's response
      * @param Response $response
      *
-     * @return QRData
+     * @return A2AOrderData
      */
     static public function createFromResponse($response)
     {
         $data = $response->getData();
-        $qr = new QRData();
-        $qr->imgData = $data['qr_data'];
-        $qr->href = $data['qr_code'];
-        $qr->orderId = $data['order_id'];
-        $qr->expiration = $data['expiration'];
-        return $qr;
+        $order = new A2AOrderData();
+        $order->imgData = $data['qr_data'];
+        $order->href = $data['qr_code'];
+        $order->orderId = $data['order_id'];
+        $order->expiration = $data['expiration'];
+        return $order;
     }
 
     /**

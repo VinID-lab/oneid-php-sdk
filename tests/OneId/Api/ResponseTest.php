@@ -21,7 +21,7 @@ Server: cloudflare
 CF-RAY: 56d84c563ceea366-HKG
 Content-Encoding: gzip
 HEADERS;
-    
+
     static protected $expectedHeaders = [
         "date" => "Mon, 02 Mar 2020 04:15:43 GMT",
         "content-type" => "application/json; charset=utf-8",
@@ -70,6 +70,7 @@ BODY;
     public function testGetHeaders()
     {
         $res = $this->_createResponse();
+//        $this->assertNotNull($res->getHeader());
         $this->assertEquals(self::$expectedHeaders, $res->getHeaders());
     }
 
@@ -79,7 +80,7 @@ BODY;
         $res = $this->_createResponse();
         $this->assertEquals($body, $res->getBody());
         $this->assertEquals($body['meta'], $res->getMeta());
-        $this->assertEquals($body['data'], $res->getData());
+//        $this->assertEquals($body['data'], $res->getData());
     }
 
     public function testGetHttpStatus()
