@@ -163,7 +163,7 @@ class Client
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         $responseText = curl_exec($curl);
-        print_r($responseText);
+        
         if ($responseText === false) {
             trigger_error(curl_error($curl), E_USER_WARNING);
             return null;
