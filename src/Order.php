@@ -33,6 +33,7 @@ class Order
     public $merchantTransactionId;
     public $transactionId;
     public $status;
+    public $redirectUrl;
 
     /**
      * @var Client
@@ -52,6 +53,7 @@ class Order
      * @param string $currency
      * @param string $userId
      * @param string $username
+     * @param string $redirectUrl
      * @throws Exception
      */
     public function __construct(
@@ -64,7 +66,8 @@ class Order
         $extraData = null,
         $currency = "VND",
         $userId = "",
-        $username = ""
+        $username = "",
+	$redirectUrl = ""
     )
     {
         if (isset($this->orderID)) {
@@ -82,7 +85,8 @@ class Order
         $this->storeCode = $storeCode;
         $this->userId = $userId;
         $this->username = $username;
-    }
+	$this->redirectUrl = $redirectUrl;
+   } 
 
     /**
      * @return Client
@@ -122,7 +126,7 @@ class Order
      * Build API body
      * @return string
      */
-    protected function buildApiRequestBody_GenTransactionQr()
+    protected function buildApiRequestBody_GenTransactionQr($isWebPayment = false)
     {
         $params = [
             'callback_url' => $this->callbackURL,
@@ -135,6 +139,12 @@ class Order
             'service_type' => $this->serviceType,
             'store_code' => $this->storeCode
         ];
+	if($isWebPayment) {
+           if(len($this->redirectUrl) == 0) {
+	      throw new Exception("[VinID] You must specific a redirect URL!");
+	   }
+	   $params['redirect_url'] = $this->redirectUrl;
+	}
         return json_encode($params);
     }
 
@@ -168,6 +178,19 @@ class Order
      * @throws InvalidPrivateKeyException
      */
     public function getQRData()
+    {
+        $body = $this->buildApiRequestBody_GenTransactionQr();
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
+        return QRData::createFromResponse($rv);
+    }
+
+    /**
+     * Get web payment URL.
+     * @return QRData
+     * @throws InvalidPrivateKeyException
+     */
+    public function getWebPaymentUrl()
     {
         $body = $this->buildApiRequestBody_GenTransactionQr();
         $client = $this->getClient();

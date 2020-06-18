@@ -36,6 +36,12 @@ class QRData
     protected $expiration;
 
     /**
+     * Payment URL to use on website
+     * @var string
+     */
+    protected $paymentUrl;
+
+    /**
      * Create this QRData from API's response
      * @param Response $response
      *
@@ -49,8 +55,17 @@ class QRData
         $qr->href = $data['qr_code'];
         $qr->orderId = $data['order_id'];
         $qr->expiration = $data['expiration'];
+	$qr->paymentUrl = $data['payment_url'];
         return $qr;
     }
+
+    /**
+     * @return string
+     */
+    public function getPaymentUrl()
+    {
+        return $this->paymentUrl;
+    }    
 
     /**
      * @return string

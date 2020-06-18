@@ -44,13 +44,13 @@ class UtilitiesTest extends TestCase
 
     /**
      * @dataProvider generateSignatureDataProvider
-     * @expectedException \OneId\InvalidPrivateKeyException
      */
     public function testGenerateSignature_WrongKey($url, $method, $nonce, $timestamp, $apiKey, $requestBody, $privateKey, $expected)
     {
         $charPosToRemove = random_int(0, strlen($privateKey));
         $wrongPrivateKey = substr($privateKey, 0, $charPosToRemove) . substr($privateKey, $charPosToRemove+1);
-        $this->expectException("OneId\InvalidPrivateKeyException");
+	//        $this->expectException("OneId\InvalidPrivateKeyException");
+	$this->expectException(InvalidPrivateKeyException::class);
         $this->expectWarning();
         $signature = Utilities::generateSignature($url, $method, $nonce, $timestamp, $apiKey, $requestBody, $wrongPrivateKey);
     }

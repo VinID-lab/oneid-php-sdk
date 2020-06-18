@@ -145,9 +145,9 @@ class Client
     {
         $req = $this->prepareRequest($method, $url, $body, $nonce, $timestamp);
         $curl = curl_init($this->getApiEndPoint($url));
-        print_r(PHP_EOL);
-        print_r("REQUEST".PHP_EOL);
-        print_r($req->getEncodedBody().PHP_EOL);
+        /* print_r(PHP_EOL); */
+        /* print_r("REQUEST".PHP_EOL); */
+        /* print_r($req->getEncodedBody().PHP_EOL); */
 //        curl_setopt($ch, CURLOPT_URL, $this->getApiEndPoint($url));
         if ($method == 'POST') {
             curl_setopt($curl, CURLOPT_POST, 1);
