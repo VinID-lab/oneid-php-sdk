@@ -1,8 +1,6 @@
 <?php
 
-
 namespace OneId\Models;
-
 
 use OneId\Api\Response;
 
