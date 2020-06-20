@@ -56,8 +56,5 @@ $order = new Order(
 
 $qr = $order->getQRData();
 
-// print to HTML Img tag
-// printf('<img src="%s" />', $qr->getImgSrcAttr());
-
 // print to console
 print_r($qr->getImgData());
