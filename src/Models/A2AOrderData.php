@@ -12,8 +12,6 @@ use OneId\Api\Response;
  */
 class A2AOrderData
 {
-
-
     /**
      * Create this QRData from API's response
      * @param Response $response

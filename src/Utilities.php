@@ -27,7 +27,6 @@ class InvalidParamsException extends \Exception
 class Utilities
 {
     /**
-     * @todo -o Long please comment here
      * @param string $url
      * @param string $method POST or GET
      * @param string $nonce
