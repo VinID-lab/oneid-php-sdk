@@ -67,7 +67,7 @@ class Order
         $currency = "VND",
         $userId = "",
         $username = "",
-	$redirectUrl = ""
+        $redirectUrl = ""
     )
     {
         if (isset($this->orderID)) {
@@ -85,8 +85,8 @@ class Order
         $this->storeCode = $storeCode;
         $this->userId = $userId;
         $this->username = $username;
-	$this->redirectUrl = $redirectUrl;
-   } 
+        $this->redirectUrl = $redirectUrl;
+    }
 
     /**
      * @return Client
@@ -124,7 +124,9 @@ class Order
 
     /**
      * Build API body
+     * @param $isWebPayment
      * @return string
+     * @throws Exception
      */
     protected function buildApiRequestBody_GenTransactionQr($isWebPayment = false)
     {
@@ -139,12 +141,12 @@ class Order
             'service_type' => $this->serviceType,
             'store_code' => $this->storeCode
         ];
-	if($isWebPayment) {
-           if(len($this->redirectUrl) == 0) {
-	      throw new Exception("[VinID] You must specific a redirect URL!");
-	   }
-	   $params['redirect_url'] = $this->redirectUrl;
-	}
+        if ($isWebPayment) {
+            if (len($this->redirectUrl) == 0) {
+                throw new Exception("[VinID] You must specific a redirect URL!");
+            }
+            $params['redirect_url'] = $this->redirectUrl;
+        }
         return json_encode($params);
     }
 

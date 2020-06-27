@@ -40,6 +40,7 @@ class Giftcode
      * @param $storeCode
      * @param $cardType
      * @param $merchantOrderId
+     * @param $serial
      */
     public function __construct(
         $callbackURL,
@@ -50,7 +51,8 @@ class Giftcode
         $cardType,
         $merchantOrderId,
         $serial
-    ) {
+    )
+    {
         $this->callbackURL = $callbackURL;
         $this->description = $description;
         $this->extraData = $extraData;
