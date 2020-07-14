@@ -73,3 +73,27 @@ $qr = $order->getQRData();
 
 printf('<img src="%s" />', $qr->getImgSrcAttr());
 ```
+
+## Generate App2App Order
+
+```php
+use OneId\Order;
+
+$callbackURL = "https://localhost";
+$description = "This is a sample order";
+$amount = 10000; // In VND
+$storeCode = "You get this from merchant site";
+$posCode = "You get this from merchant site";
+$orderReferenceId = "order's ID in your system.";
+
+$order = new Order(
+    $callbackURL,
+    $description,
+    $amount,
+    $storeCode,
+    $posCode,
+    $orderReferenceId,
+);
+
+$yourOrder = $order->createA2AOrder();
+```

@@ -156,6 +156,53 @@ class OrderTest extends ApiTestCases
 //        $this->assertEquals($fakeRes->data->refund_transaction_wallet_id, $order->getRefundTransactionWalletId());
     }
 
+    public function testRefundV2()
+    {
+        $amount = 10012;
+        $currency = "VND";
+        $description = "Refund from Unit test";
+        $merchant_transaction_id = "SOME TRANS ID THIS";
+        $transaction_id = "SOME TRANS ID THIS";
+        $user_id = "USER_ID";
+        $callbackURL = "http://localhost";
+        $storeCode = Utilities::generateGUID4();
+        $posCode = Utilities::generateGUID4();
+
+        $order = new Order(
+            $callbackURL,
+            $description,
+            $amount,
+            $storeCode,
+            $posCode
+        );
+
+        $order->orderId = 1;
+        $order->amount = $amount;
+        $order->currency = $currency;
+        $order->description = $description;
+        $order->merchantTransactionId = $merchant_transaction_id;
+        $order->transactionId = $transaction_id;
+        $order->userId = $user_id;
+
+        $fakeRes = new \stdClass();
+        $fakeRes->meta = new \stdClass();
+        $fakeRes->data = new \stdClass();
+        $fakeRes->meta->code = 200;
+        $fakeRes->meta->message = "OK";
+        $fakeRes->data->original_transaction_id = "SOME TRANS ID THIS";
+        $fakeRes->data->refund_transaction_id = "SOME REFUND ID THAT";
+        $fakeRes->data->refund_transaction_wallet_id = "SOME WALLET TRANS ID";
+        $client = $this->createMockClient($fakeRes);
+        $order->bindClient($client);
+
+        $refundOrder = $order->refund_v2();
+
+        $this->assertEquals($fakeRes->meta->code, 200);
+//        $this->assertEquals($fakeRes->data->original_transaction_id, $order->getOriginalTransactionId());
+//        $this->assertEquals($fakeRes->data->refund_transaction_id, $order->getRefundTransactionId());
+//        $this->assertEquals($fakeRes->data->refund_transaction_wallet_id, $order->getRefundTransactionWalletId());
+    }
+
     public function testCreateOrder()
     {
         $callbackURL = "http://localhost";
