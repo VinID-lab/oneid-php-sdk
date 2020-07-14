@@ -72,8 +72,8 @@ class Order
         $userId = "",
         $username = "",
         $redirectUrl = "",
-        $originalOrderReferenceId = "",
-        $point_amount
+        $originalOrderReferenceId = null,
+        $point_amount = null
     ) {
         if (isset($this->orderID)) {
             throw new Exception("[VinID] This order already processed!");

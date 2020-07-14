@@ -10,7 +10,7 @@ class OrderTest extends ApiTestCases
 
     public function testGetClient()
     {
-        $order = new Order(1, 2, 3, 4, 5);
+        $order = new Order(1, 2, 3, 4, 5,6, 7, 8, 9, 10, 11, 12 , 13);
         $this->assertEquals(Client::defaultClient(), $order->getClient());
 
         $xClient = new Client();

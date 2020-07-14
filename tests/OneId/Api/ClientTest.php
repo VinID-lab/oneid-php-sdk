@@ -115,9 +115,6 @@ class ClientTest extends TestCase
         $client->setApiKey(TEST_API_KEY);
         $client->setBaseUrl(API_BASEURL_SANDBOX);
 
-        var_dump($method);
-        var_dump($url);
-        var_dump($body);
         $req = $client->prepareRequest($method, $url, $body);
 
         $expectedHeaders = $expected['headers'];
