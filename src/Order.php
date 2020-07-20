@@ -7,6 +7,7 @@ use OneId\Api\Client;
 use OneId\Models\A2AOrderData;
 use OneId\Models\QRData;
 use OneId\Models\RefundData;
+use OneId\Models\RefundDataV2;
 use OneId\Models\StatusData;
 
 /**
@@ -21,6 +22,7 @@ class Order
     public $description;
     public $extraData;
     public $amount;
+    public $point_amount;
     public $currency;
     public $orderReferenceId;
     public $posCode;
@@ -34,6 +36,7 @@ class Order
     public $transactionId;
     public $status;
     public $redirectUrl;
+    public $originalOrderReferenceId;
 
     /**
      * @var Client
@@ -54,6 +57,7 @@ class Order
      * @param string $userId
      * @param string $username
      * @param string $redirectUrl
+     * @param string $originalOrderReferenceId
      * @throws Exception
      */
     public function __construct(
@@ -67,9 +71,10 @@ class Order
         $currency = "VND",
         $userId = "",
         $username = "",
-        $redirectUrl = ""
-    )
-    {
+        $redirectUrl = "",
+        $originalOrderReferenceId = null,
+        $point_amount = null
+    ) {
         if (isset($this->orderID)) {
             throw new Exception("[VinID] This order already processed!");
         }
@@ -86,6 +91,8 @@ class Order
         $this->userId = $userId;
         $this->username = $username;
         $this->redirectUrl = $redirectUrl;
+        $this->originalOrderReferenceId = $originalOrderReferenceId;
+        $this->point_amount = $point_amount;
     }
 
     /**
@@ -150,6 +157,44 @@ class Order
         return json_encode($params);
     }
 
+    /**
+     * Build API body for refund
+     * @return string
+     * @throws Exception
+     */
+    protected function buildApiRequestBody_Refund()
+    {
+        $params = [
+            'amount' => $this->amount,
+            'currency' => $this->currency,
+            'description' => $this->description,
+            'merchant_transaction_id' => $this->merchantTransactionId,
+            'transaction_id' => $this->transactionId,
+            'user_id' => $this->userId,
+            'user_name' => $this->username
+        ];
+
+        return json_encode($params);
+    }
+
+    /**
+     * Build API body
+     * @return string
+     */
+    protected function buildApiRequestBody_RefundV2()
+    {
+        $params = [
+            "order_reference_id" => $this->orderReferenceId,
+            "original_order_reference_id" => $this->originalOrderReferenceId,
+            "vnd_amount" => $this->amount,
+            "point_amount" => $this->point_amount,
+            "description" => $this->description,
+            "merchant_user_id" => $this->userId,
+            "merchant_user_name" => $this->username
+        ];
+
+        return json_encode($params);
+    }
     /**
      * Build API body
      * @return string
@@ -235,10 +280,24 @@ class Order
      */
     public function refund()
     {
-        $body = $this->buildApiRequestBody_GenTransactionQr();
+        $body = $this->buildApiRequestBody_Refund();
         $client = $this->getClient();
-        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
+        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_REFUND, $body);
         return RefundData::createFromResponse($rv);
+    }
+
+    /**
+     * Refund an order version 02.
+     *
+     * @return RefundDataV2
+     * @throws InvalidPrivateKeyException
+     */
+    public function refund_v2()
+    {
+        $body = $this->buildApiRequestBody_RefundV2();
+        $client = $this->getClient();
+        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_REFUND_V2, $body);
+        return RefundDataV2::createFromResponse($rv);
     }
 
     /**

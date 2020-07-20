@@ -7,6 +7,8 @@ class Url {
     const API_ENDPOINT_TRANSACTION_QR = '/merchant-integration/v1/qr/gen-transaction-qr';
     const API_ENDPOINT_CREATE_ORDER = '/merchant-integration/v1/qr/create-transaction-order';
     const API_ENDPOINT_QUERY_ORDER_STATUS = '/merchant-integration/v1/qr/query/';
+    const API_ENDPOINT_REFUND = '/merchant-integration/v1/refund';
+    const API_ENDPOINT_REFUND_V2 = '/merchant-integration/v2/refund';
 
     const API_ENDPOINT_CHECK_QUANTITY = '/merchant-integration/v1/loyalty/check-quantity';
     const API_ENDPOINT_GET_GIFTCODE = '/merchant-integration/v1/loyalty/get-giftcode';
