@@ -3,12 +3,14 @@
 namespace OneId;
 
 use Exception;
+use InvalidArgumentException;
 use OneId\Api\Client;
 use OneId\Models\A2AOrderData;
 use OneId\Models\QRData;
 use OneId\Models\RefundData;
 use OneId\Models\RefundDataV2;
 use OneId\Models\StatusData;
+use OneId\Models\B2CTransferData;
 
 /**
  * This class provide all order's feature with OneId
@@ -38,6 +40,9 @@ class Order
     public $redirectUrl;
     public $originalOrderReferenceId;
 
+    public $reiceverPhoneNumber;
+    public $merchantAccountId;
+
     /**
      * @var Client
      */
@@ -58,6 +63,8 @@ class Order
      * @param string $username
      * @param string $redirectUrl
      * @param string $originalOrderReferenceId
+     * @param string $reiceverPhoneNumber;
+     * @param string $merchantAccountId;
      * @throws Exception
      */
     public function __construct(
@@ -73,7 +80,9 @@ class Order
         $username = "",
         $redirectUrl = "",
         $originalOrderReferenceId = null,
-        $point_amount = null
+        $point_amount = null,
+        $reiceverPhoneNumber = null,
+        $merchantAccountId = null
     ) {
         if (isset($this->orderID)) {
             throw new Exception("[VinID] This order already processed!");
@@ -93,6 +102,8 @@ class Order
         $this->redirectUrl = $redirectUrl;
         $this->originalOrderReferenceId = $originalOrderReferenceId;
         $this->point_amount = $point_amount;
+        $this->reiceverPhoneNumber = $reiceverPhoneNumber;
+        $this->merchantAccountId = $merchantAccountId;
     }
 
     /**
@@ -217,6 +228,23 @@ class Order
     }
 
     /**
+     * Build API body
+     * @return string
+     */
+    protected function buildApiRequestBody_B2CTransfer()
+    {
+        $params = [
+            'amount' => $this->amount,
+            'currency' => $this->currency,
+            'description' => $this->description,
+            'receiver_phone_number' => $this->reiceverPhoneNumber,
+            'merchant_account_id' => $this->merchantAccountId,
+            'merchant_transaction_id' => $this->orderReferenceId
+        ];
+        return json_encode($params);
+    }
+
+    /**
      * Generate a QR image.
      * After you get the image data, please add it to HTML like that:
      * <img href="{qrData}" />
@@ -228,7 +256,7 @@ class Order
     {
         $body = $this->buildApiRequestBody_GenTransactionQr();
         $client = $this->getClient();
-        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
+        $rv = $this->getClient()->request(Url::METHOD_POST, Url::API_ENDPOINT_TRANSACTION_QR, $body);
         return QRData::createFromResponse($rv);
     }
 
@@ -241,7 +269,7 @@ class Order
     {
         $body = $this->buildApiRequestBody_GenTransactionQr();
         $client = $this->getClient();
-        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_TRANSACTION_QR, $body);
+        $rv = $this->getClient()->request(Url::METHOD_POST, Url::API_ENDPOINT_TRANSACTION_QR, $body);
         return QRData::createFromResponse($rv);
     }
 
@@ -282,7 +310,7 @@ class Order
     {
         $body = $this->buildApiRequestBody_Refund();
         $client = $this->getClient();
-        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_REFUND, $body);
+        $rv = $this->getClient()->request(Url::METHOD_POST, Url::API_ENDPOINT_REFUND, $body);
         return RefundData::createFromResponse($rv);
     }
 
@@ -296,7 +324,7 @@ class Order
     {
         $body = $this->buildApiRequestBody_RefundV2();
         $client = $this->getClient();
-        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_REFUND_V2, $body);
+        $rv = $this->getClient()->request(Url::METHOD_POST, Url::API_ENDPOINT_REFUND_V2, $body);
         return RefundDataV2::createFromResponse($rv);
     }
 
@@ -313,7 +341,7 @@ class Order
             throw new InvalidParamsException("[OneID] Order's instance is not contain valid ID!");
         }
         $client = $this->getClient();
-        $rv = $this->getClient()->request("GET", Url::API_ENDPOINT_QUERY_ORDER_STATUS . $this->orderId, "");
+        $rv = $this->getClient()->request(Url::METHOD_GET, Url::API_ENDPOINT_QUERY_ORDER_STATUS . $this->orderId, "");
         return StatusData::createFromResponse($rv);
     }
 
@@ -331,7 +359,31 @@ class Order
         }
         $body = $this->buildApiRequestBody_CreateOrder();
         $client = $this->getClient();
-        $rv = $this->getClient()->request("POST", Url::API_ENDPOINT_CREATE_ORDER, $body);
+        $rv = $this->getClient()->request(Url::METHOD_POST, Url::API_ENDPOINT_CREATE_ORDER, $body);
         return A2AOrderData::createFromResponse($rv);
+    }
+
+    /**
+     * Create new Money Transfer order.
+     *
+     * @return B2CTransferData
+     * @throws InvalidParamsException
+     * @throws InvalidPrivateKeyException
+     */
+    public function createB2CTransferOrder()
+    {
+        if (isset($this->orderId)) {
+            throw new InvalidParamsException("[OneID] Order's instance already defined!");
+        }
+        if (isset($this->reiceverPhoneNumber)) {
+            throw new InvalidArgumentException("[OneID] Transfer order require reicever phone number!");
+        }
+        if (isset($this->merchantAccountId)) {
+            throw new InvalidArgumentException("[OneID] Transfer order require merchant account ID!");
+        }
+
+        $body = $this->buildApiRequestBody_B2CTransfer();
+        $rv = $this->getClient()->request(Url::METHOD_POST, Url::API_ENDPOINT_CREATE_ORDER, $body);
+        return B2CTransferData::createFromResponse($rv);
     }
 }
